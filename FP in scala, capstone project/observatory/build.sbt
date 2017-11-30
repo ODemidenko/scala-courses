@@ -1,5 +1,6 @@
 name := course.value ++ "-" ++ assignment.value
 
+//scalaVersion := "2.11.8"
 scalaVersion := "2.11.8"
 
 scalacOptions ++= Seq(

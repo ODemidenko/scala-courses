@@ -1,5 +1,6 @@
 package observatory
 
+import scala.math._
 /**
   * Introduced in Week 1. Represents a location on the globe.
   * @param lat Degrees of latitude, -90 ≤ lat ≤ 90
@@ -15,7 +16,16 @@ case class Location(lat: Double, lon: Double)
   * @param y Y coordinate of the tile
   * @param zoom Zoom level, 0 ≤ zoom ≤ 19
   */
-case class Tile(x: Int, y: Int, zoom: Int)
+case class Tile(x: Int, y: Int, zoom: Int) {
+//  def location= Location(
+//      90-y*(zoom*2)/180,
+//      -180+x*(zoom*2)/360
+//    )
+  def toLatLon = new Location(
+    toDegrees(atan(sinh(Pi * (1.0 - 2.0 * y.toDouble / (1<<zoom))))),
+    x.toDouble / (1<<zoom) * 360.0 - 180.0)
+}
+
 
 /**
   * Introduced in Week 4. Represents a point on a grid composed of
@@ -39,4 +49,5 @@ case class CellPoint(x: Double, y: Double)
   * @param blue Level of blue, 0 ≤ blue ≤ 255
   */
 case class Color(red: Int, green: Int, blue: Int)
+
 
