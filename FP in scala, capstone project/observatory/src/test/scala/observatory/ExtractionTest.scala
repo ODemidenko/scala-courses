@@ -20,5 +20,9 @@ class ExtractionTest extends FunSuite {
 //      assert(Extraction.fsPath("\\stations.csv") == Paths.get(getClass.getResource("\\stations.csv").toURI).toString,
 //        "tests still obtain results differently from Scala worksheet")
 //    }
+
+  test("dataEtl doesn' throw an error") {
+    Extraction.dataETL(1975,"\\stations.csv","\\1975.csv")
+  }
   
 }

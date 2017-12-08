@@ -1,6 +1,8 @@
 package observatory
 
 import com.sksamuel.scrimage.{Image, Pixel}
+
+import scala.collection.mutable.ArrayBuffer
 import scala.math._
 
 /**
@@ -13,7 +15,28 @@ object Interaction {
     * @return The latitude and longitude of the top-left corner of the tile, as per http://wiki.openstreetmap.org/wiki/Slippy_map_tilenames
     */
   def tileLocation(tile: Tile): Location = {
-    tile.toLatLon
+    tile.location
+  }
+
+  def tileCoordinatesArray(tile:Tile): Array[Location] ={
+    val tilesLocsArray=Array.ofDim[Location](TileScale*TileScale)
+
+    var pHeight=0
+    while (pHeight<TileScale) {
+      var pWidth = 0
+      while (pWidth < TileScale) {
+        tilesLocsArray(pHeight*TileScale+pWidth)=
+          Tile.locationByTileParams(TileScale* tile.x + pWidth,
+            TileScale * tile.y + pHeight,
+          tile.zoom
+            + (log(TileScale.toDouble) / log(2)
+            ).toInt
+        )
+        pWidth+=1
+      }
+      pHeight+=1
+    }
+    tilesLocsArray
   }
 
   /**
@@ -22,26 +45,18 @@ object Interaction {
     * @param tile Tile coordinates
     * @return A 256×256 image showing the contents of the given tile
     */
-  def tile(temperatures: Iterable[(Location, Temperature)], colors: Iterable[(Temperature, Color)], tile: Tile): Image = {
-    val tilePixelScale = tile.zoom+1
-    val latPixelScale=(tile.zoom*2)/180/256
-    val lonPixelScale=(tile.zoom*2)/360/256
-    //// Так можно делать присваивание ведь?
-    val Location(latB,lonB)=tileLocation(tile)
-    val tileContent=for (pHeight<-(0 until 256) ; pWidth<-(0 until 256))
-    yield {
-      /*each tile consists of pixels (256*256), where puxel coordinates may be considered being 8-times smaller tiles
-        as 256=2**8
-      */
-      val location=Tile(256*tile.x+pWidth,256*tile.y+pHeight,tile.zoom*8).toLatLon
+  def tile(temperatures: Iterable[(Location, Temperature)], colors: Iterable[(Temperature, Color)], tile: Tile
+          ): Image = {
+    val tileContent: Array[Color] =tileCoordinatesArray(tile).map(loc=>
       Visualization.interpolateColor(colors,
         Visualization.predictTemperature(temperatures,
-          location))
-      match {
-        case Color(r, g, b) => Pixel(r, g, b, 100)
+          loc)))
+    val tileArray=tileContent.map {
+        case Color(r, g, b)
+        => Pixel(r, g, b, 100)
       }
-    }
-      Image (256, 256, tileContent.toArray: Array[Pixel] )
+
+      Image (TileScale, TileScale, tileArray: Array[Pixel] )
   }
 
   /**
@@ -49,10 +64,10 @@ object Interaction {
    */
   def imageGenerator(year:Year, drawingTile:Tile, yearData:Iterable[(Location, Temperature)]):Unit={
 
+    val image:Image=tile(yearData,ColorScale,drawingTile)
+
     val outputFile = new java.io.File(s"target//temperatures//$year//${drawingTile.zoom}//${drawingTile.x}-${drawingTile.y}.png")
     outputFile.getParentFile.mkdirs()
-
-    val image:Image=tile(yearData,ColorScale,drawingTile)
     image.output(outputFile)
   }
 
@@ -69,7 +84,7 @@ object Interaction {
     generateImage: (Year, Tile, Data) => Unit
   ): Unit = {
     for ((year,data)<-yearlyData.par) {
-      for (zoom<-(0 to 3); x<-(0 until pow(zoom.toDouble,2d).toInt); y<-(0 until pow(zoom.toDouble,2d).toInt) ) {
+      for (zoom<-(0 to 3); x<-(0 until pow(2.0,zoom.toDouble).toInt); y<-(0 until pow(2.0,zoom.toDouble).toInt) ) {
         generateImage(year,Tile(x,y,zoom),data)
       }
     }

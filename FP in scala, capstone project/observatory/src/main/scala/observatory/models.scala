@@ -17,13 +17,14 @@ case class Location(lat: Double, lon: Double)
   * @param zoom Zoom level, 0 ≤ zoom ≤ 19
   */
 case class Tile(x: Int, y: Int, zoom: Int) {
-//  def location= Location(
-//      90-y*(zoom*2)/180,
-//      -180+x*(zoom*2)/360
-//    )
-  def toLatLon = new Location(
-    toDegrees(atan(sinh(Pi * (1.0 - 2.0 * y.toDouble / (1<<zoom))))),
-    x.toDouble / (1<<zoom) * 360.0 - 180.0)
+  def location = Tile.locationByTileParams(x, y, zoom)
+}
+
+object Tile {
+  def locationByTileParams(x:Int,y:Int,zoom:Int)=
+    Location(
+      toDegrees(atan(sinh(Pi * (1.0 - 2.0 * y.toDouble / (1<<zoom))))),
+      x.toDouble / (1<<zoom) * 360.0 - 180.0)
 }
 
 

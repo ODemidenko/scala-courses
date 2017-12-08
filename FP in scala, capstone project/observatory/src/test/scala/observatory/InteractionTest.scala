@@ -6,7 +6,7 @@ import org.scalatest.prop.Checkers
 import scala.collection.concurrent.TrieMap
 
 
-
+class InterationTestRunner extends InteractionTest
 trait InteractionTest extends FunSuite with Checkers {
 
   test("tileLocation") {
@@ -14,13 +14,18 @@ trait InteractionTest extends FunSuite with Checkers {
     assert(Interaction.tileLocation(Tile(10, 10, 10)) === Location(84.7383871209534, -176.484375))
   }
 
-  ignore("заполнение tiles") {
-    // todo: сгенерировать по 2015
-    val annualData= for (year<-(1975 to 1975)) yield
+  test("tile coordinates,zooming is correct") {
+    assert(Tile(8,0,3).location.lon==180)
+    assert(Tile(8,8,3).location.lat < -80)
+  }
+
+
+  test("заполнение tiles") {
+    // todo: сгенерировать c 1975 по 2015
+    val annualData= for (year<-(2010 to 2015)) yield
       (year,
         Extraction.locationYearlyAverageRecords( Extraction.locateTemperatures(year,"\\stations.csv",s"\\$year.csv"))
       )
     Interaction.generateTiles(annualData,Interaction.imageGenerator)
-
   }
 }

@@ -18,6 +18,8 @@ import org.apache.spark.sql.catalyst.expressions.Literal
 /**
   * 1st milestone: data extraction
   */
+
+// todo: (third priority)
 object Extraction {
   Logger.getLogger("org.apache.spark").setLevel(Level.WARN)
 
@@ -136,4 +138,8 @@ object Extraction {
       ).mapValues {case (count,sum)=>sum/count}
   }
 
+//  def locationYearlyAverageRecordsInSpark(year: Year): DataFrame = {
+//    val rawYearDF=dataETL(year,"\\stationsFile.csv", s"\\year.csv")
+//      rawYearDF.groupBy("Year","Latitude","Longitude").avg("Temperature").as("Temperature")
+//  }
 }
